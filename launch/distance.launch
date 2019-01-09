@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+    <node pkg="pointcloud_distance" name="pointcloud_distance" type="pointcloud_distance" output="screen"> 
+        <rosparam file="$(find pointcloud_distance)/config/parameters.yaml" command="load" />
+    </node>
+</launch>
