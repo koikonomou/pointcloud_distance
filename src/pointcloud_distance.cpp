@@ -1,6 +1,7 @@
 #include <ros/ros.h>
 #include <cmath>
 #include <cstdio>
+#include <std_msgs/Float32.h>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/common/centroid.h>
@@ -10,11 +11,15 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <sensor_msgs/point_cloud_conversion.h>
 
-ros::Publisher pub1;
+
 float x_vel , min_dist;
+ros::Publisher pub1 , pub_value;
 
 void cloud_cb (const sensor_msgs::PointCloud2Ptr& cloud_msg)
 {
+    std_msgs::Float32 value;
+    value.data = static_cast<float>(value.data);
+    
     pcl::PCLPointCloud2 cl2;
     pcl_conversions::toPCL( *cloud_msg , cl2);
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud1(new pcl::PointCloud<pcl::PointXYZ> );
@@ -32,8 +37,13 @@ void cloud_cb (const sensor_msgs::PointCloud2Ptr& cloud_msg)
 
     if (centroid[2] > min_dist){
         pub1.publish(msg);
+        value.data = 0;
+    }
+    else {
+        value.data = 1.0;
     }
 
+    pub_value.publish(value);
 
 }
 
@@ -49,6 +59,7 @@ int main (int argc, char** argv)
     nh.param("pointcloud_distance/min_dist", min_dist, 1.0f);
 
     ros::Subscriber sub = nh.subscribe (in_topic, 1, cloud_cb);
+    pub_value = nh.advertise<std_msgs::Float32>("value",1);
     pub1 = nh.advertise<geometry_msgs::Twist>("cmd_vel", 1);
     ros::spin ();
 }
