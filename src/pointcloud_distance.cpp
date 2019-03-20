@@ -19,7 +19,7 @@ bool b = true;
 
 ros::NodeHandle *n;
 ros::Subscriber dist_sub;
-std::string conf_topic = "";
+std::string in_topic = "";
 ros::Publisher pub1 , pub_value;
 
 void cloud_cb (const sensor_msgs::PointCloud2 cloud_msg)
@@ -62,7 +62,7 @@ bool srv_callback(navigation_srv::navigation_srv::Request &req, navigation_srv::
     }
     else if (req.command == 1 and !running){
         if (!running){
-            dist_sub = n->subscribe<sensor_msgs::PointCloud2>(conf_topic,1 , cloud_cb);
+            dist_sub = n->subscribe<sensor_msgs::PointCloud2>(in_topic , 1 , cloud_cb);
             running = true ;
             ROS_INFO("Started cmd_vel publisher!");
         }
@@ -77,11 +77,11 @@ int main (int argc, char** argv)
     ros::NodeHandle nh;
     n = &nh;
 
-    std::string in_topic, out_topic;
+    std::string  out_topic, service_topic;
     nh.param("pointcloud_distance/input_topic", in_topic, std::string("/camera/depth/points"));
     nh.param("pointcloud_distance/x_vel", x_vel , 0.1f);
     nh.param("pointcloud_distance/min_dist", min_dist, 1.0f);
-    nh.param("pointcloud_distance/conf_topic", conf_topic, std::string("/camera/depth/points"));
+    nh.param("pointcloud_distance/service_topic", service_topic, std::string("/service/cmd_vel_publisher"));
 
     if (running){
         ros::Subscriber sub = nh.subscribe (in_topic, 1, cloud_cb);
@@ -92,14 +92,14 @@ int main (int argc, char** argv)
     pub1 = nh.advertise<geometry_msgs::Twist>("cmd_vel", 1);
 
 
-    ros::ServiceServer service = nh.advertiseService("/cmd_vel_publisher", srv_callback);
+    ros::ServiceServer service = nh.advertiseService(service_topic, srv_callback);
     while(ros::ok()){
         ros::spinOnce();
         if (b){
-            ROS_WARN("Call rosservise /cmd_vel_publisher with command: 1 to start node and command: 0 to shutdown");
+            ROS_WARN("Call rosservise with command: 1 to start node and command: 0 to shutdown");
             b = false;
         }
     }
     // ros::spin ();
     return 0;
-}
+}   

@@ -1,3 +1,4 @@
 input_topic: "/camera/depth/points"
+service_topic: "/service/pointcloud_distance/cmd_vel"
 x_vel: 0.1
 min_dist: 1.0
